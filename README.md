@@ -13,10 +13,17 @@ Python
 NumPy
 Matplotlib
 
+# python code
+[solar_position.py](solar position.py)
+
+# Example Output
+![Python output model](model_output.png)
+![Comparison of NOAA and NREL](comparison_prl.png)
+![Elevation and Azimuth angle (PRL)](elevation_azimuth.png)
+![North pole Elevation and Azimuth angle](north_pole.png)
+![South pole Elevation and Azimuth angle](south_pole.png)
+
 # Applications
 Solar energy systems
 Astronomical calculations
 Satellite tracking
-
-# Example Output
-![Elevation](Screenshot(1004).png)
