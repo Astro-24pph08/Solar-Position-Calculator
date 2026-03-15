@@ -14,7 +14,7 @@ NumPy
 Matplotlib
 
 # python code
-[solar_position.py](solar position.py)
+[solar_position_algorithm.py](Solar_position_algorithm.py)
 
 # Example Output
 ![Python output model](model_output.png)
