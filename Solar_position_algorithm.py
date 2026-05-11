@@ -20,11 +20,11 @@ delta_T = 69
 DEG_TO_RAD = math.pi / 180
 RAD_TO_DEG = 180 / math.pi
 
-# === Time Conversion Functions ===
+# Time Conversion
 def lst_to_utc(lst_dt, tz_offset):
     return lst_dt - timedelta(hours=tz_offset)
 
-# === Julian Date Calculations ===
+# Julian Date 
 def julian_date(dt):
     year = dt.year
     month = dt.month
@@ -39,7 +39,7 @@ def julian_date(dt):
     jd = int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + day + B - 1524.5
     return jd
 
-# === Time System Conversions ===
+# Time System Conversions
 def julian_century(jd):
     return (jd - 2451545.0) / 36525.0
 
@@ -52,7 +52,7 @@ def julian_ephemeris_century(jde):
 def julian_ephemeris_millennium(jce):
     return jce / 10.0
 
-# === Earth Heliocentric Coordinates ===
+# Earth Heliocentric Coordinates
 L_TERMS = {
     0: [(175347046, 0, 0), (3341656, 4.6692568, 6283.07585), (34894, 4.6261, 12566.1517), 
         (3497, 2.7441, 5753.3849), (3418, 2.8289, 3.5231), (3136, 3.6277, 77713.7715),
@@ -156,7 +156,7 @@ def compute_LBR(JME):
     
     return R, theta, beta, L_deg, B_deg
 
-# === Nutation Calculations ===
+# Nutation Calculations
 nutation_coeffs = [
     [0, 0, 0, 0, 1, -171996, -174.2, 92025, 8.9], [-2, 0, 0, 2, 2, -13187, -1.6, 5736, -3.1],
     [0, 0, 0, 2, 2, -2274, -0.2, 977, -0.5], [0, 0, 0, 0, 2, 2062, 0.2, -895, 0.5],
@@ -221,7 +221,7 @@ def mean_obliquity_ecliptic(JME):
     U = JME / 10.0
     epsilon_not = (84381.448 - U * 4680.93 - 1.55 * U**2 + 1999.25 * U**3 - 51.38 * U**4 - 
                   249.67 * U**5 - 39.05 * U**6 + 7.12 * U**7 + 27.87 * U**8 + 5.79 * U**9 + 2.45 * U**10)
-    return epsilon_not  # In arcseconds
+    return epsilon_not  # in arcseconds
 
 def true_obliquity(epsilon_not_arcsec, delta_epsilon_deg):
     return (epsilon_not_arcsec / 3600) + delta_epsilon_deg
@@ -318,7 +318,7 @@ def topocentric_azimuth_angle(latitude, H_prime, decl_prime):
         math.cos(math.radians(H_prime)) * math.sin(math.radians(latitude)) - 
         math.tan(decl_prime) * math.cos(math.radians(latitude))
     )) % 360
-    return (azimuth + 180) % 360  # Convert to measured from south
+    return (azimuth + 180) % 360
 
 def incidence_angle(theta, omega, gamma, azimuth):
     return math.degrees(math.acos(
@@ -331,7 +331,7 @@ def equation_of_time(JME, alpha, delta_psi, true_eps):
     E = 280.4664567 + 360007.6982779 * JME + 0.03032028 * JME**2 + JME**3/49931 - JME**4/15300 - JME**5/2000000
     return (E - 0.0057183 - alpha + delta_psi * math.cos(math.radians(true_eps))) % 360
 
-# === Main Calculation ===
+# Final Calculation
 ut_time = lst_to_utc(input_date, timezone_offset)
 JD = julian_date(ut_time)
 JC = julian_century(JD)
@@ -393,30 +393,26 @@ incidence = incidence_angle(theta_zenith, omega_deg, gamma_deg, azimuth)
 E = equation_of_time(JME, alpha, delta_psi, true_eps)
 
 def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, date, delta_T, elevation=0, temp_c=15, p_hpa=1013.25):
-    # Convert input date to UTC at midnight (00:00:00)
+    # Converting input date to UTC at midnight
     local_midnight = datetime(date.year, date.month, date.day, 0, 0, 0)
     utc_midnight = lst_to_utc(local_midnight, timezone_offset)
     
-    # Calculate Julian Date for midnight UTC
+    # Calculating Julian Date for midnight UTC
     jd_midnight = julian_date(utc_midnight)
     
-    # Approximate solar noon (in fraction of day)
-    # First estimate - solar noon is approximately at local noon (12:00) minus equation of time
-    # We'll do an iterative approach to find the exact time
-    
-    # Function to calculate transit (solar noon) time
+    # Calculating transit time (solar noon) 
     def calculate_transit_time(jd_start):
-        # Iterate to find exact transit time
-        prev_ha = 360  # Initialize with large value
+        # Iteration to find exact transit time
+        prev_ha = 360 
         delta = 0
-        for _ in range(10):  # 10 iterations should be sufficient
+        for _ in range(10):
             jd = jd_start + delta
             jc = julian_century(jd)
             jde = julian_ephemeris_day(jd, delta_T)
             jce = julian_ephemeris_century(jde)
             jme = julian_ephemeris_millennium(jce)
             
-            # Calculate sun position
+            # Calculating sun position
             R, theta, beta, L_deg, B_deg = compute_LBR(jme)
             delta_psi, delta_epsilon = compute_nutation(jce)
             epsilon_not = mean_obliquity_ecliptic(jme)
@@ -425,7 +421,7 @@ def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, da
             lambda_apparent = apparent_sun_longitude(theta, delta_psi, delta_tau_val)
             alpha = sun_right_ascension(lambda_apparent, true_eps, beta)
             
-            # Calculate sidereal time
+            # Calculating sidereal time
             nu0 = mean_sidereal_time(jd, jc)
             nu = apparent_sidereal_time(nu0, delta_psi, true_eps)
             
@@ -434,31 +430,31 @@ def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, da
             if H > 180:
                 H -= 360
             
-            # Update delta
+            # Delta update
             delta += -H / 360.0
-            if abs(H) < 0.0001:  # Sufficient precision
+            if abs(H) < 0.0001:
                 break
             prev_ha = H
         
         return jd_start + delta
     
-    # Calculate transit time (solar noon)
-    transit_jd = calculate_transit_time(jd_midnight + 0.5)  # Start with local noon estimate
-    transit_utc = (transit_jd - jd_midnight) * 24  # Hours since midnight UTC
+    # Calculating transit time (solar noon)
+    transit_jd = calculate_transit_time(jd_midnight + 0.5)
+    transit_utc = (transit_jd - jd_midnight) * 24 
     
-    # Function to calculate sunrise/sunset time
+    # Calculating sunrise/sunset time
     def calculate_rise_set_time(jd_start, is_sunrise=True):
-        # Iterate to find exact rise/set time
+        # Iteration to find exact rise/set time
         prev_alt = 0
         delta = 0
-        for _ in range(10):  # 10 iterations should be sufficient
+        for _ in range(10):
             jd = jd_start + delta
             jc = julian_century(jd)
             jde = julian_ephemeris_day(jd, delta_T)
             jce = julian_ephemeris_century(jde)
             jme = julian_ephemeris_millennium(jce)
             
-            # Calculate sun position
+            # Calculating sun position
             R, theta, beta, L_deg, B_deg = compute_LBR(jme)
             delta_psi, delta_epsilon = compute_nutation(jce)
             epsilon_not = mean_obliquity_ecliptic(jme)
@@ -468,7 +464,7 @@ def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, da
             alpha = sun_right_ascension(lambda_apparent, true_eps, beta)
             decl = sun_declination(lambda_apparent, true_eps, beta)
             
-            # Calculate sidereal time
+            # Calculating sidereal time
             nu0 = mean_sidereal_time(jd, jc)
             nu = apparent_sidereal_time(nu0, delta_psi, true_eps)
             
@@ -486,22 +482,22 @@ def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, da
             if is_sunrise:
                 ha = -ha
             
-            # Calculate time difference from transit
-            time_diff = ha / 360.0  # Fraction of day
+            # Calculating time difference from transit
+            time_diff = ha / 360.0  
             
-            # Update delta
+            # Delta update
             delta = time_diff
-            if abs(ha - prev_alt) < 0.0001:  # Sufficient precision
+            if abs(ha - prev_alt) < 0.0001:
                 break
             prev_alt = ha
         
-        return jd_start + 0.5 + delta  # 0.5 is transit time
+        return jd_start + 0.5 + delta
     
-    # Calculate sunrise and sunset times
+    # Calculating sunrise and sunset times
     sunrise_jd = calculate_rise_set_time(jd_midnight, is_sunrise=True)
     sunset_jd = calculate_rise_set_time(jd_midnight, is_sunrise=False)
     
-    # Convert JD times to datetime objects
+    # Converting JD times to datetime 
     def jd_to_datetime(jd):
         if jd is None:
             return None
@@ -518,8 +514,8 @@ def calculate_solar_noon_sunrise_sunset(latitude, longitude, timezone_offset, da
         'sunrise': sunrise,
         'sunset': sunset
     }
-
-# Add this to your main code
+    
+# Calculatiing sun times
 sun_times = calculate_solar_noon_sunrise_sunset(
     latitude=latitude,
     longitude=longitude,
@@ -531,7 +527,7 @@ sun_times = calculate_solar_noon_sunrise_sunset(
     p_hpa=p_hpa
 )
 
-# Print results
+# Printing results
 print("\nAdditional Solar Times:")
 print(f"Solar Noon: {sun_times['solar_noon'].strftime('%Y-%m-%d %H:%M:%S')}")
 if sun_times['sunrise']:
@@ -548,7 +544,7 @@ print(f"Topocentric Azimuth Angle: {azimuth:.10f} degrees (measured westward fro
 print(f"Incidence Angle: {incidence:.10f} degrees")
 print(f"Equation of Time: {E:.10f} minutes")
 for i in range(1000000):
-    pass  # Example task
+    pass  
 
 end_time = time.time()
 
